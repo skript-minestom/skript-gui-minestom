@@ -8,10 +8,10 @@ import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
+import ch.njol.skript.util.ComponentWrapper;
 import ch.njol.skript.util.InventoryType;
 import ch.njol.util.Kleenean;
 import ch.njol.util.coll.CollectionUtils;
-import io.github.apickledwalrus.skriptgui.SkriptGUI;
 import io.github.apickledwalrus.skriptgui.gui.GUI;
 import net.kyori.adventure.text.Component;
 import org.bukkit.event.Event;
@@ -62,7 +62,7 @@ public class ExprGUIProperties extends SimplePropertyExpression<GUI, Object> {
 		if (mode == ChangeMode.SET || mode == ChangeMode.RESET) {
 			switch (property) {
 				case NAME:
-					return CollectionUtils.array(Component.class);
+					return CollectionUtils.array(ComponentWrapper.class, Component.class);
 				case ROWS:
 					return CollectionUtils.array(Number.class);
 				case SHAPE:
@@ -76,16 +76,15 @@ public class ExprGUIProperties extends SimplePropertyExpression<GUI, Object> {
 
 	@Override
 	public void change(Event e, Object @Nullable [] delta, ChangeMode mode) {
-		if (delta == null || (mode != ChangeMode.SET && mode != ChangeMode.RESET)) {
+		if ((mode != ChangeMode.SET && mode != ChangeMode.RESET) || (mode == ChangeMode.SET && delta == null)) {
 			return;
 		}
-		GUI gui = SkriptGUI.getGUIManager().getGUI(e);
-		if (gui != null) {
+		for (GUI gui : getExpr().getArray(e)) {
 			switch (mode) {
 				case SET:
 					switch (property) {
 						case NAME:
-							gui.setName((Component) delta[0]);
+							gui.setName(delta[0] instanceof ComponentWrapper wrapper ? wrapper.getComponent() : (Component) delta[0]);
 							break;
 						case ROWS:
 							gui.setSize(((Number) delta[0]).intValue() * 9);
