@@ -7,23 +7,25 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GUIManager {
 
 	/**
 	 * A map for tracking all GUIs based on their Inventory.
 	 * Used mainly during event processing (see {@link io.github.apickledwalrus.skriptgui.gui.events.GUIEvents}).
+	 * Concurrent because scripts may query GUIs from threads other than the server thread.
 	 */
-	private final Map<AbstractInventory, GUI> guis = new HashMap<>();
+	private final Map<AbstractInventory, GUI> guis = new ConcurrentHashMap<>();
 
 	/**
 	 * A map to track the GUI involved in an event.
 	 * Used for tracking GUIs within Skript {@link ch.njol.skript.lang.Trigger}s.
 	 */
-	private final WeakHashMap<Event, GUI> eventGUIs = new WeakHashMap<>();
+	private final Map<Event, GUI> eventGUIs = Collections.synchronizedMap(new WeakHashMap<>());
 
 	/**
 	 * Registers a GUI with the manager. This enables event processing for the given GUI.
@@ -43,7 +45,9 @@ public class GUIManager {
 		gui.clear();
 		guis.remove(gui.getInventory());
 		// Just remove them from the event GUIs list now
-		eventGUIs.values().removeIf(eventGUI -> eventGUI == gui);
+		synchronized (eventGUIs) {
+			eventGUIs.values().removeIf(eventGUI -> eventGUI == gui);
+		}
 	}
 
 	/**
@@ -134,8 +138,8 @@ public class GUIManager {
 	 * @return The GUI with this inventory, or null if a GUI with this inventory doesn't exist.
 	 */
 	@Nullable
-	public GUI getGUI(AbstractInventory inventory) {
-		return guis.get(inventory);
+	public GUI getGUI(@Nullable AbstractInventory inventory) {
+		return inventory != null ? guis.get(inventory) : null;
 	}
 
 }
