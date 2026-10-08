@@ -4,6 +4,7 @@ import net.minestom.server.entity.Player;
 import net.minestom.server.event.inventory.InventoryCloseEvent;
 import net.minestom.server.event.inventory.InventoryOpenEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
+import net.minestom.server.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,5 +71,6 @@ public abstract class GUIEventHandler {
 	public abstract void onDrag(InventoryPreClickEvent e);
 	public abstract void onOpen(InventoryOpenEvent e);
 	public abstract void onClose(InventoryCloseEvent e);
+	public abstract void onChange(Player player, ItemStack[] before);
 
 }

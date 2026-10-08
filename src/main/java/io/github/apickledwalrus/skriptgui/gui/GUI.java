@@ -69,6 +69,24 @@ public class GUI {
 		}
 
 		@Override
+		public void onChange(Player player, ItemStack[] before) {
+			if (isPaused() || isPaused(player)) return;
+
+			int size = Math.min(before.length, inventory.getSize());
+			for (int slot = 0; slot < size; slot++) {
+				if (before[slot].equals(inventory.getItemStack(slot))) continue;
+				SlotData slotData = getSlotData(convert(slot));
+				if (slotData == null) continue;
+				Consumer<InventoryPreClickWrapper> runOnChange = slotData.getRunOnChange();
+				if (runOnChange != null) {
+					InventoryPreClickWrapper wrapper = new InventoryPreClickWrapper(new InventoryPreClickEvent(inventory, player, new Click.Left(slot)));
+					SkriptGUI.getGUIManager().setGUI(wrapper, GUI.this);
+					runOnChange.accept(wrapper);
+				}
+			}
+		}
+
+		@Override
 		public void onOpen(InventoryOpenEvent e) {
 			if (isPaused() || isPaused(e.getPlayer())) {
 				return;
@@ -294,7 +312,12 @@ public class GUI {
 		}
 
 		// Although we may be adding null consumers, it lets us track what slots have been set
-		slots.put(ch, new SlotData(consumer, removable));
+		SlotData slotData = new SlotData(consumer, removable);
+		SlotData existing = slots.get(ch);
+		if (existing != null) {
+			slotData.setRunOnChange(existing.getRunOnChange());
+		}
+		slots.put(ch, slotData);
 		if (item == null) item = ItemStack.AIR;
 		int i = 0;
 		for (char ch1 : rawShape.toCharArray()) {
@@ -488,6 +511,13 @@ public class GUI {
 		}
 	}
 
+	public boolean hasChangeListeners() {
+		for (SlotData slotData : slots.values()) {
+			if (slotData.getRunOnChange() != null) return true;
+		}
+		return false;
+	}
+
 	/**
 	 * Returns the SlotData for the provided slot. SlotData contains properties of a GUI slot.
 	 * @param slot The slot to find data for.
@@ -505,6 +535,8 @@ public class GUI {
 
 		@Nullable
 		private Consumer<InventoryPreClickWrapper> runOnClick;
+		@Nullable
+		private Consumer<InventoryPreClickWrapper> runOnChange;
 		private boolean removable;
 
 		public SlotData(@Nullable Consumer<InventoryPreClickWrapper> runOnClick, boolean removable) {
@@ -526,6 +558,15 @@ public class GUI {
 		 */
 		public void setRunOnClick(@Nullable Consumer<InventoryPreClickWrapper> runOnClick) {
 			this.runOnClick = runOnClick;
+		}
+
+		@Nullable
+		public Consumer<InventoryPreClickWrapper> getRunOnChange() {
+			return runOnChange;
+		}
+
+		public void setRunOnChange(@Nullable Consumer<InventoryPreClickWrapper> runOnChange) {
+			this.runOnChange = runOnChange;
 		}
 
 		/**
