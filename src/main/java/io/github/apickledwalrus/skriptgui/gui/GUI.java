@@ -45,8 +45,9 @@ public class GUI {
 
 				Consumer<InventoryPreClickWrapper> runOnClick = slotData.getRunOnClick();
 				if (runOnClick != null) {
-					SkriptGUI.getGUIManager().setGUI(new InventoryPreClickWrapper(e), GUI.this);
-					runOnClick.accept(new InventoryPreClickWrapper(e));
+					InventoryPreClickWrapper wrapper = new InventoryPreClickWrapper(e);
+					SkriptGUI.getGUIManager().setGUI(wrapper, GUI.this);
+					runOnClick.accept(wrapper);
 				}
 			} else { // If there is no slot data, cancel if this GUI doesn't have stealable items
 				e.setCancelled(!isRemovable());
