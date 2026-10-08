@@ -10,6 +10,7 @@ import net.minestom.server.event.EventNode;
 import net.minestom.server.event.inventory.InventoryCloseEvent;
 import net.minestom.server.event.inventory.InventoryOpenEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
+import net.minestom.server.event.player.PlayerAnvilInputEvent;
 import net.minestom.server.event.trait.InventoryEvent;
 import net.minestom.server.inventory.AbstractInventory;
 import net.minestom.server.inventory.Inventory;
@@ -110,6 +111,12 @@ public class GUIEvents {
 			GUI gui = SkriptGUI.getGUIManager().getGUI(event.getInventory());
 			if (gui != null) {
 				gui.getEventHandler().onClose(event);
+			}
+		});
+		child.addListener(PlayerAnvilInputEvent.class, event -> {
+			GUI gui = SkriptGUI.getGUIManager().getGUI(event.getInventory());
+			if (gui != null) {
+				gui.setAnvilInput(event.getPlayer(), event.getInput());
 			}
 		});
 

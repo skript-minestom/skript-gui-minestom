@@ -115,6 +115,11 @@ public class GUI {
 	};
 
 	private final Map<Character, SlotData> slots = new HashMap<>();
+
+	private final Map<Player, String> anvilInputs = new HashMap<>();
+	@Nullable
+	private String lastAnvilInput;
+
 	@Nullable
 	private String rawShape;
 
@@ -486,6 +491,17 @@ public class GUI {
 			SkriptGUI.getGUIManager().unregister(this);
 			clear();
 		}
+	}
+
+	public void setAnvilInput(Player player, String input) {
+		anvilInputs.put(player, input);
+		lastAnvilInput = input;
+	}
+
+	@Nullable
+	public String getAnvilInput(@Nullable Player player) {
+		if (player == null) return lastAnvilInput;
+		return anvilInputs.get(player);
 	}
 
 	/**
